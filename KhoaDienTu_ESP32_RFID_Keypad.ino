@@ -149,30 +149,46 @@ void loop() {
               }
             }
           }
+          else if(temp == 'C')
+          {
+            u8x8log.print("\f");
+            return;
+          }
         }
       } 
       else if (key == '#') {
-        u8x8log.print("Add old card!");
-        while(!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial());
-        String uid = "";
-        for (byte i = 0; i < rfid.uid.size; i++) 
+        u8x8log.print("Enter password!\n");
+        enteredPassword = "";
+        while(enteredPassword.length() < 6)
         {
-          uid += String(rfid.uid.uidByte[i], HEX);
-        }
-        uid.toUpperCase();
-        if(checkCard(uid))
-        {
-          mode = 2;
-          return;
-        }
-        else 
-        {
-          u8x8log.print("\f");
-          u8x8log.print("Card invalid!");
-          u8x8log.print("\n");
-          delay(1000);
-          u8x8log.print("\f");
-          return;
+          char temp = keypad.getKey();
+          if(temp >= 48 && temp <= 57)
+          {
+            u8x8log.print('*');
+            enteredPassword += temp;
+            if (enteredPassword.length() == 6) {
+              if (enteredPassword == defaultPassword) 
+              {
+                mode = 2;
+                enteredPassword = "";
+                return;
+              }
+              else
+              {
+                u8x8log.print("\f");
+                u8x8log.print("Wrong password!");
+                u8x8log.print("\n");
+                delay(1000);
+                u8x8log.print("\f");
+                return;
+              }
+            }
+          }
+          else if(temp == 'C')
+          {
+            u8x8log.print("\f");
+            return;
+          }
         }
       } 
       else if(key>=48 && key<=57)
@@ -219,17 +235,32 @@ void loop() {
           mode = 0;
           return;
         }
+      }
+      else if(key == 'C')
+      {
+        u8x8log.print("\f");
+        mode = 0;
+        return;
       }  
     }
   }
   else if(mode == 2)
   {
     u8x8log.print("\f");
-    u8x8log.print("Switch card!\n");
+    u8x8log.print("New card!\n");
     String temp = "";
     do
     {
-      while(!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial());
+      while(!rfid.PICC_IsNewCardPresent() || !rfid.PICC_ReadCardSerial())
+      {
+        char key = keypad.getKey();
+        if(key == 'C')
+        {
+          u8x8log.print("\f");
+          mode = 0;
+          return;
+        }
+      }
       String uid = "";
       for (byte i = 0; i < rfid.uid.size; i++) 
       {
